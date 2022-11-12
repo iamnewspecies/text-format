@@ -3,5 +3,5 @@ flags:
     developer: false
 packages:
 - '.'
-extra-deps: []
-resolver: lts-3.0
+extra-deps:
+resolver: lts-19.32

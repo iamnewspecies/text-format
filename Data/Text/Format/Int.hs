@@ -23,7 +23,7 @@ import Data.Text.Format.Functions (i2d)
 import Data.Text.Lazy.Builder
 import Data.Word (Word, Word8, Word16, Word32, Word64)
 import GHC.Base (quotInt, remInt)
-import GHC.Num (quotRemInteger)
+import qualified GHC.Num as GN
 import GHC.Types (Int(..))
 
 #ifdef  __GLASGOW_HASKELL__
@@ -100,8 +100,8 @@ int = decimal
 data T = T !Integer !Int
 
 integer :: Int -> Integer -> Builder
-integer 10 (S# i#) = decimal (I# i#)
-integer 16 (S# i#) = hexadecimal (I# i#)
+integer 10 (GN.IS i#) = decimal (I# i#)
+integer 16 (GN.IS i#) = hexadecimal (I# i#)
 integer base i
     | i < 0     = minus <> go (-i)
     | otherwise = go i
@@ -113,12 +113,12 @@ integer base i
       | p > n       = [n]
       | otherwise   = splith p (splitf (p*p) n)
 
-    splith p (n:ns) = case n `quotRemInteger` p of
+    splith p (n:ns) = case n `GN.quotRemInteger` p of
                         PAIR(q,r) | q > 0     -> q : r : splitb p ns
                                   | otherwise -> r : splitb p ns
     splith _ _      = error "splith: the impossible happened."
 
-    splitb p (n:ns) = case n `quotRemInteger` p of
+    splitb p (n:ns) = case n `GN.quotRemInteger` p of
                         PAIR(q,r) -> q : r : splitb p ns
     splitb _ _      = []
 
@@ -136,7 +136,7 @@ integer base i
     maxDigits | base == 10 = maxDigits10
               | otherwise  = maxDigits16
 
-    putH (n:ns) = case n `quotRemInteger` maxInt of
+    putH (n:ns) = case n `GN.quotRemInteger` maxInt of
                     PAIR(x,y)
                         | q > 0     -> int q <> pblock r <> putB ns
                         | otherwise -> int r <> putB ns
@@ -144,7 +144,7 @@ integer base i
                               r = fromInteger y
     putH _ = error "putH: the impossible happened"
 
-    putB (n:ns) = case n `quotRemInteger` maxInt of
+    putB (n:ns) = case n `GN.quotRemInteger` maxInt of
                     PAIR(x,y) -> pblock q <> pblock r <> putB ns
                         where q = fromInteger x
                               r = fromInteger y
